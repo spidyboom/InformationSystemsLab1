@@ -16,4 +16,5 @@ public interface CoordinatesService {
     CoordinatesResponse findById(Integer id);
     List<CoordinatesResponse> findAll();
     void delete(Integer id);
+    List<CoordinatesResponse> findAvailable();
 }

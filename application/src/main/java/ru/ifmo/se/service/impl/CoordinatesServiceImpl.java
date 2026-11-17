@@ -38,6 +38,13 @@ public class CoordinatesServiceImpl implements CoordinatesService {
         return mapper.toResponse(coordinates);
     }
 
+    @Transactional(readOnly = true)
+    public List<CoordinatesResponse> findAvailable() {
+        return repository.findAvailable().stream()
+                .map(mapper::toResponse)
+                .toList();
+    }
+
     @Override
     @Transactional(readOnly = true)
     public List<CoordinatesResponse> findAll() {

@@ -28,6 +28,11 @@ public class CoordinatesController {
         return service.findById(id);
     }
 
+    @GetMapping("/available")
+    public List<CoordinatesResponse> findAvailable() {
+        return service.findAvailable();
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CoordinatesResponse create(@Valid @RequestBody CoordinatesRequest request) {
