@@ -13,7 +13,7 @@
     </parent>
 
     <groupId>ru.ifmo.se</groupId>
-    <artifactId>backend</artifactId>
+    <artifactId>application</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
@@ -72,10 +72,41 @@
 
     <build>
         <plugins>
-            <!-- Плагин для сборки исполняемого JAR-файла -->
+            <!-- Плагин для сборки исполняемого JAR -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+            <!-- Плагин для генерации кода (MapStruct + Lombok) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <annotationProcessorPaths>
+                        <!-- 1. Lombok -->
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.46</version>
+                        </path>
+                        <!-- 2. Мост между Lombok и MapStruct -->
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok-mapstruct-binding</artifactId>
+                            <version>0.2.0</version>
+                        </path>
+                        <!-- 3. Сам MapStruct Processor -->
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>1.6.3</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
             </plugin>
         </plugins>
     </build>

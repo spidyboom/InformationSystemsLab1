@@ -1,0 +1,130 @@
+# Переменные для этого файла (если не хотите использовать глобальные)
+@api = http://localhost:8080/api
+
+###
+# 1. Создание координат
+POST {{api}}/coordinates
+Content-Type: application/json
+
+{
+  "x": 30.5,
+  "y": 59.9
+}
+
+> {%
+    // Этот скрипт выполнится после получения ответа.
+    // Он сохранит ID созданных координат в глобальную переменную `coordinatesId`,
+    // чтобы использовать её в следующих запросах.
+    client.global.set("coordinatesId", response.body.id);
+%}
+
+###
+# 2. Создание дома
+POST {{api}}/houses
+Content-Type: application/json
+
+{
+  "name": "ЖК Аврора",
+  "year": 2018,
+  "numberOfFlatsOnFloor": 4
+}
+
+> {%
+    client.global.set("houseId", response.body.id);
+%}
+
+###
+# 3. Создание квартиры с использованием ID из предыдущих шагов
+POST {{api}}/flats
+Content-Type: application/json
+
+{
+  "name": "Квартира на Невском",
+  "coordinatesId": {{coordinatesId}},
+  "houseId": {{houseId}},
+  "area": 72,
+  "price": 25000000,
+  "balcony": true,
+  "timeToMetroOnFoot": 8,
+  "numberOfRooms": 3,
+  "floor": 4,
+  "furnish": "DESIGNER",
+  "transport": "NORMAL"
+}
+
+> {%
+    client.global.set("flatId", response.body.id);
+    // Это тест: он проверит, что статус ответа 201 (Created).
+    client.test("Status code is 201", function() {
+        client.assert(response.status === 201, "Response status is not 201");
+    });
+%}
+
+###
+# 4. Получение списка квартир с фильтром и пагинацией
+GET {{api}}/flats?name=Невском&page=0&size=5&sort=price,desc
+
+> {%
+    client.test("Status code is 200", function() {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+###
+# 5. Получение квартиры по ID, сохранённому ранее
+GET {{api}}/flats/{{flatId}}
+
+###
+# 6. Обновление квартиры
+PUT {{api}}/flats/{{flatId}}
+Content-Type: application/json
+
+{
+  "name": "Обновленная квартира",
+  "coordinatesId": {{coordinatesId}},
+  "houseId": {{houseId}},
+  "area": 75,
+  "price": 26000000,
+  "balcony": false,
+  "timeToMetroOnFoot": 10,
+  "numberOfRooms": 3,
+  "floor": 5,
+  "furnish": "FINE",
+  "transport": "NORMAL"
+}
+
+###
+# 7. Тест валидации: отправляем некорректные данные (area = -5)
+POST {{api}}/flats
+Content-Type: application/json
+
+{
+  "name": "Ошибочная квартира",
+  "coordinatesId": {{coordinatesId}},
+  "area": -5,
+  "price": 1000,
+  "balcony": true,
+  "timeToMetroOnFoot": 5
+}
+
+> {%
+    // Этот тест проверяет, что наш GlobalExceptionHandler вернул 400 Bad Request
+    client.test("Validation should fail with 400", function() {
+        client.assert(response.status === 400, "Response status is not 400");
+        client.assert(response.body.fields.area === "area must be > 0", "Expected validation message not found");
+    });
+%}
+
+###
+# 8. Специальные операции
+GET {{api}}/special/total-price
+
+###
+GET {{api}}/special/most-expensive-without-balcony
+
+###
+GET {{api}}/special/by-name-prefix?prefix=Квартира
+
+###
+# 9. Удаление квартиры
+DELETE {{api}}/flats/{{flatId}}
